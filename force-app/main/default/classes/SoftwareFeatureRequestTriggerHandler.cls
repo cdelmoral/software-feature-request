@@ -1,4 +1,8 @@
 public with sharing class SoftwareFeatureRequestTriggerHandler {
+
+    /**
+     * Assign new records to Unassigned Queue.
+     */
     public static void handleBeforeInsert(List<Software_Feature_Request__c> requests) {
         Id queueId = SoftwareFeatureRequestsController.getUnassignedQueueId();
         for (Software_Feature_Request__c request : requests) {
@@ -6,10 +10,16 @@ public with sharing class SoftwareFeatureRequestTriggerHandler {
         }
     }
 
+    /**
+     * Publish platform events for new records.
+     */
     public static void handleAfterInsert(List<Software_Feature_Request__c> requests) {
         publishNotifications(requests, null);
     }
 
+    /**
+     * Publish platform events for records with updated Title, Owner, Software Product or Status.
+     */
     public static void handleAfterUpdate(List<Software_Feature_Request__c> newRequests,
             Map<Id, Software_Feature_Request__c> oldRequestsById) {
         List<Software_Feature_Request__c> filteredRequests = new List<Software_Feature_Request__c>();
