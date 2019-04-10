@@ -42,14 +42,19 @@
             const userId = component.get('v.currentUserId');
             const queueId = component.get('v.unassignedQueueId');
             const ownerId = message.data.payload.New_Owner_Id__c;
-            if (userId && userId != ownerId && queueId && queueId != ownerId) {
+            const oldOwnerId = message.data.payload.Old_Owner_Id__c;
+            if (userId && userId !== ownerId && queueId && queueId !== ownerId) {
                 const title = message.data.payload.New_Title__c;
                 const ownerName = message.data.payload.New_Owner_Name__c;
                 const notificationMessage = 'Software Feature Request "' + title + '" assigned to ' + ownerName + ' was updated';
                 helper.showInfoToast(notificationMessage);
-            } else if (userId && userId == ownerId) {
+            }
+
+            if (userId && (userId === ownerId || userId === oldOwnerId)) {
                 helper.refreshUserTable(component, event, helper);
-            } else if (queueId && queueId == ownerId) {
+            }
+
+            if (queueId && (queueId === ownerId || queueId === oldOwnerId)) {
                 helper.refreshUnassignedTable(component, event, helper);
             }
         };

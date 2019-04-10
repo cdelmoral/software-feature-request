@@ -7,7 +7,7 @@ public with sharing class SoftwareFeatureRequestTriggerHandler {
     }
 
     public static void handleAfterInsert(List<Software_Feature_Request__c> requests) {
-        publishNotifications(requests);
+        publishNotifications(requests, null);
     }
 
     public static void handleAfterUpdate(List<Software_Feature_Request__c> newRequests,
@@ -23,21 +23,30 @@ public with sharing class SoftwareFeatureRequestTriggerHandler {
         }
 
         if (!filteredRequests.isEmpty()) {
-            publishNotifications(filteredRequests);
+            publishNotifications(filteredRequests, oldRequestsById);
         }
     }
 
-    private static void publishNotifications(List<Software_Feature_Request__c> requests) {
+    private static void publishNotifications(List<Software_Feature_Request__c> requests,
+            Map<Id, Software_Feature_Request__c> oldRequests) {
         List<Software_Feature_Request__c> requestsWithOwnerName = [
-            SELECT OwnerId, Name, Owner.Name FROM Software_Feature_Request__c WHERE Id IN :requests
+            SELECT OwnerId, Name, Owner.Name
+            FROM Software_Feature_Request__c
+            WHERE Id IN :requests
         ];
         List<Software_Feature_Request_Notification__e> notifications = new List<Software_Feature_Request_Notification__e>();
         for (Software_Feature_Request__c request : requestsWithOwnerName) {
-            notifications.add(new Software_Feature_Request_Notification__e(
-                New_Owner_Id__c = request.OwnerId,
-                New_Title__c = request.Name,
-                New_Owner_Name__c = request.Owner.Name
-            ));
+            Software_Feature_Request_Notification__e notification = new Software_Feature_Request_Notification__e();
+            notification.Software_Feature_Request__c = request.Id;
+            notification.New_Owner_Id__c = request.OwnerId;
+            notification.New_Title__c = request.Name;
+            notification.New_Owner_Name__c = request.Owner.Name;
+
+            if (oldRequests != null && oldRequests.containsKey(request.Id)) {
+                notification.Old_Owner_Id__c = oldRequests.get(request.Id).OwnerId;
+            }
+
+            notifications.add(notification);
         }
         List<Database.SaveResult> results = EventBus.publish(notifications);
     }

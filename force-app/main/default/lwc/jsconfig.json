@@ -2,11 +2,7 @@
     "compilerOptions": {
         "experimentalDecorators": true,
         "baseUrl": ".",
-        "paths": {
-            "c/SoftwareFeatureRequestsIndex": [
-                "SoftwareFeatureRequestsIndex/SoftwareFeatureRequestsIndex.js"
-            ]
-        }
+        "paths": {}
     },
     "include": [
         "**/*",
